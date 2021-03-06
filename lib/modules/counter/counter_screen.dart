@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intermitty/modules/timer/bloc/timer_bloc.dart';
+import 'package:intermitty/modules/counter/counter_bloc.dart';
 
-class TimerScreen extends StatelessWidget {
-  final _timerbloc = TimerBloc(initialTime: 10);
+class CounterScreen extends StatelessWidget {
+  final _counterbloc = CounterBloc(initialTime: 10, running: false);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class TimerScreen extends StatelessWidget {
         children: [
           Center(
             child: StreamBuilder<Object>(
-                stream: _timerbloc.timeObservable,
+                stream: _counterbloc.timeObservable,
                 builder: (context, snapshot) {
                   return Text(
                     snapshot.data.toString(),
@@ -23,7 +23,7 @@ class TimerScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _timerbloc.increment(),
+        onPressed: () => _counterbloc.toggle(),
         child: Text('start'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
