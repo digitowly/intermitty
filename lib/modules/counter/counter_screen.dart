@@ -5,6 +5,7 @@ import 'package:intermitty/widgets/progress_circle.dart';
 class CounterScreen extends StatelessWidget {
   final _counterbloc = CounterBloc(
     initialTime: DateTime.now(),
+    fastingTime: const Duration(seconds: 20),
     running: false,
   );
 

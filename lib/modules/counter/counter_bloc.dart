@@ -2,22 +2,33 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CounterBloc {
-  DateTime initialTime;
+  final DateTime initialTime;
+  final Duration fastingTime;
+
   DateTime currentTime;
   Duration duration;
-  String currentDisplayTime;
   bool running;
 
   BehaviorSubject<Duration> _subjectCount;
 
-  CounterBloc({@required this.initialTime, @required this.running}) {
+  CounterBloc({
+    @required this.initialTime,
+    @required this.fastingTime,
+    @required this.running,
+  }) {
     _subjectCount = BehaviorSubject<Duration>.seeded(this.duration);
     currentTime = initialTime;
   }
 
   Stream<Duration> get timeObservable => _subjectCount.stream;
+
+  void saveTimeData(DateTime currentTime) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('time', currentTime.toIso8601String());
+  }
 
   void toggle() {
     running = !running;
@@ -25,8 +36,12 @@ class CounterBloc {
       if (running == true) {
         currentTime = currentTime.add(const Duration(seconds: 1));
         duration = currentTime.difference(initialTime);
+        if (duration >= fastingTime) {
+          print('success');
+        }
         _subjectCount.sink.add(duration);
       } else {
+        saveTimeData(currentTime);
         timer.cancel();
       }
     });
