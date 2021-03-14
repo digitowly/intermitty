@@ -6,9 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  void loadTimeData() async {
+  Future<String> loadTimeData() async {
     final prefs = await SharedPreferences.getInstance();
     print(prefs.getString('time'));
+    return prefs.getString('time');
   }
 
   @override
@@ -19,7 +20,9 @@ class App extends StatelessWidget {
           print('Init');
           loadTimeData();
         },
-        child: CounterScreen(),
+        child: CounterScreen(
+          initialTimeFuture: loadTimeData(),
+        ),
       ),
     );
   }

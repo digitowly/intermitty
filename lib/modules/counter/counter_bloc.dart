@@ -5,22 +5,33 @@ import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CounterBloc {
-  final DateTime initialTime;
+  final Future<String> initialTimeFuture;
   final Duration fastingTime;
 
+  DateTime initialTime;
   DateTime currentTime;
   Duration duration;
   bool running;
 
   BehaviorSubject<Duration> _subjectCount;
 
+  void initStartTime() async {
+    final initTime = await initialTimeFuture;
+    if (initTime.isNotEmpty) {
+      initialTime = DateTime.parse(initTime);
+    } else {
+      initialTime = DateTime.now();
+    }
+    currentTime = DateTime.now();
+  }
+
   CounterBloc({
-    @required this.initialTime,
+    @required this.initialTimeFuture,
     @required this.fastingTime,
     @required this.running,
   }) {
     _subjectCount = BehaviorSubject<Duration>.seeded(this.duration);
-    currentTime = initialTime;
+    initStartTime();
   }
 
   Stream<Duration> get timeObservable => _subjectCount.stream;
@@ -37,11 +48,11 @@ class CounterBloc {
         currentTime = currentTime.add(const Duration(seconds: 1));
         duration = currentTime.difference(initialTime);
         if (duration >= fastingTime) {
-          print('success');
+          // print('success');
         }
         _subjectCount.sink.add(duration);
       } else {
-        saveTimeData(currentTime);
+        // saveTimeData(currentTime);
         timer.cancel();
       }
     });
