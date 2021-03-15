@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CounterBloc {
+enum Phase { FASTING, EATING }
+
+class CounterBloc with WidgetsBindingObserver {
   final Future<String> initialTimeFuture;
   final Duration fastingTime;
+  final Duration foodTime;
+  Phase phase;
 
   DateTime initialTime;
   DateTime currentTime;
@@ -14,6 +18,26 @@ class CounterBloc {
   bool running;
 
   BehaviorSubject<Duration> _subjectCount;
+
+  CounterBloc({
+    @required this.initialTimeFuture,
+    @required this.fastingTime,
+    @required this.foodTime,
+    @required this.phase,
+    @required this.running,
+  }) {
+    _subjectCount = BehaviorSubject<Duration>.seeded(this.duration);
+    WidgetsBinding.instance.addObserver(this);
+    initStartTime();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('WOW: $state');
+    saveTimeData(currentTime);
+  }
+
+  Stream<Duration> get timeObservable => _subjectCount.stream;
 
   void initStartTime() async {
     final initTime = await initialTimeFuture;
@@ -26,16 +50,22 @@ class CounterBloc {
     toggle();
   }
 
-  CounterBloc({
-    @required this.initialTimeFuture,
-    @required this.fastingTime,
-    @required this.running,
-  }) {
-    _subjectCount = BehaviorSubject<Duration>.seeded(this.duration);
-    initStartTime();
+  Duration currentPhaseDuration() {
+    switch (phase) {
+      case Phase.FASTING:
+        return fastingTime;
+      case Phase.EATING:
+        return foodTime;
+      default:
+        return fastingTime;
+    }
   }
 
-  Stream<Duration> get timeObservable => _subjectCount.stream;
+  void switchPhase() {
+    phase = phase == Phase.FASTING ? Phase.EATING : Phase.FASTING;
+    saveTimeData(currentTime);
+    initialTime = DateTime.now();
+  }
 
   void saveTimeData(DateTime currentTime) async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,12 +78,11 @@ class CounterBloc {
       if (running == true) {
         currentTime = currentTime.add(const Duration(seconds: 1));
         duration = currentTime.difference(initialTime);
-        if (duration >= fastingTime) {
-          // print('success');
+        if (duration >= currentPhaseDuration()) {
+          switchPhase();
         }
         _subjectCount.sink.add(duration);
       } else {
-        // saveTimeData(currentTime);
         timer.cancel();
       }
     });

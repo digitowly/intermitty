@@ -9,6 +9,8 @@ class CounterScreen extends StatelessWidget {
     _counterbloc = CounterBloc(
       initialTimeFuture: initialTimeFuture,
       fastingTime: const Duration(seconds: 20),
+      foodTime: const Duration(seconds: 10),
+      phase: Phase.FASTING,
       running: false,
     );
   }
