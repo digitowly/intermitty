@@ -23,6 +23,7 @@ class CounterBloc {
       initialTime = DateTime.now();
     }
     currentTime = DateTime.now();
+    toggle();
   }
 
   CounterBloc({
