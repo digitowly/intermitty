@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intermitty/modules/counter/counter_bloc.dart';
+import 'package:intermitty/modules/counter/counter_duration_screen.dart';
 import 'package:intermitty/widgets/progress_circle.dart';
 
 class CounterScreen extends StatelessWidget {
@@ -27,27 +28,26 @@ class CounterScreen extends StatelessWidget {
             if (snapshot.hasData) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(snapshot.data),
                   Center(
                     child: StreamBuilder<Object>(
                         stream: _counterbloc.timeObservable,
                         builder: (streamContext, streamSnapshot) {
                           if (streamSnapshot.hasData) {
                             Duration duration = streamSnapshot.data;
-                            return Column(
+                            return Stack(
+                              alignment: AlignmentDirectional.center,
                               children: [
                                 CustomPaint(
-                                  painter: ProgressCircle(progress: 1.9),
+                                  painter: ProgressCircle(
+                                      progress: duration.inSeconds / 100),
                                 ),
-                                Text(
-                                  format(duration),
-                                  style: TextStyle(fontSize: 30),
-                                ),
+                                CounterDurationScreen(duration: duration)
                               ],
                             );
                           } else {
-                            return Column(
+                            return Stack(
                               children: [
                                 CustomPaint(
                                   painter: ProgressCircle(progress: 1.9),
