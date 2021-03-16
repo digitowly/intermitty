@@ -17,13 +17,13 @@ class CounterDurationScreen extends StatelessWidget {
         crossAxisCount: 3,
         children: [
           TimeSlot(
-            displayValue: duration.inHours.toString().padLeft(2, '0'),
+            displayValue: duration?.inHours.toString().padLeft(2, '0'),
           ),
           TimeSlot(
-            displayValue: duration.inMinutes.toString().padLeft(2, '0'),
+            displayValue: duration?.inMinutes.toString().padLeft(2, '0'),
           ),
           TimeSlot(
-            displayValue: duration.inSeconds.toString().padLeft(2, '0'),
+            displayValue: duration?.inSeconds.toString().padLeft(2, '0'),
           ),
         ],
       ),

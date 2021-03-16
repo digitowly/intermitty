@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intermitty/modules/counter/counter_bloc.dart';
 import 'package:intermitty/modules/counter/counter_duration_screen.dart';
+import 'package:intermitty/utils/helpers/normalize.dart';
 import 'package:intermitty/widgets/progress_circle.dart';
 
 class CounterScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class CounterScreen extends StatelessWidget {
       initialTimeFuture: initialTimeFuture,
       fastingTime: const Duration(seconds: 20),
       foodTime: const Duration(seconds: 10),
-      phase: Phase.FASTING,
+      initPhase: Phase.FASTING,
       running: false,
     );
   }
@@ -35,15 +36,32 @@ class CounterScreen extends StatelessWidget {
                         stream: _counterbloc.timeObservable,
                         builder: (streamContext, streamSnapshot) {
                           if (streamSnapshot.hasData) {
-                            Duration duration = streamSnapshot.data;
+                            CounterState counterState = streamSnapshot.data;
+                            Duration duration = counterState.duration;
+                            var maxVal = 0.0;
+                            var circleValue = 0.0;
+                            if (duration != null) {
+                              maxVal = counterState.phase == Phase.EATING
+                                  ? const Duration(seconds: 10)
+                                      .inSeconds
+                                      .toDouble()
+                                  : const Duration(seconds: 20)
+                                      .inSeconds
+                                      .toDouble();
+                              circleValue =
+                                  Normalize(maxValue: maxVal, minValue: 0.0)
+                                      .forCircle(counterState.duration.inSeconds
+                                          .toDouble());
+                            }
                             return Stack(
                               alignment: AlignmentDirectional.center,
                               children: [
                                 CustomPaint(
-                                  painter: ProgressCircle(
-                                      progress: duration.inSeconds / 100),
+                                  painter:
+                                      ProgressCircle(progress: circleValue),
                                 ),
-                                CounterDurationScreen(duration: duration)
+                                CounterDurationScreen(
+                                    duration: counterState.duration)
                               ],
                             );
                           } else {

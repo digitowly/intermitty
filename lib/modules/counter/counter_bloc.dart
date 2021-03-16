@@ -6,27 +6,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum Phase { FASTING, EATING }
 
+class CounterState {
+  Duration duration;
+  Phase phase;
+
+  CounterState({@required this.phase});
+}
+
 class CounterBloc with WidgetsBindingObserver {
   final Future<String> initialTimeFuture;
   final Duration fastingTime;
   final Duration foodTime;
-  Phase phase;
+  Phase initPhase;
 
   DateTime initialTime;
   DateTime currentTime;
-  Duration duration;
   bool running;
 
-  BehaviorSubject<Duration> _subjectCount;
+  var counterState;
+
+  BehaviorSubject<CounterState> _subjectCount;
 
   CounterBloc({
     @required this.initialTimeFuture,
     @required this.fastingTime,
     @required this.foodTime,
-    @required this.phase,
+    @required this.initPhase,
     @required this.running,
   }) {
-    _subjectCount = BehaviorSubject<Duration>.seeded(this.duration);
+    counterState = CounterState(phase: initPhase);
+    _subjectCount = BehaviorSubject<CounterState>.seeded(counterState);
     WidgetsBinding.instance.addObserver(this);
     initStartTime();
   }
@@ -37,7 +46,7 @@ class CounterBloc with WidgetsBindingObserver {
     saveTimeData(currentTime);
   }
 
-  Stream<Duration> get timeObservable => _subjectCount.stream;
+  Stream<CounterState> get timeObservable => _subjectCount.stream;
 
   void initStartTime() async {
     final initTime = await initialTimeFuture;
@@ -51,7 +60,7 @@ class CounterBloc with WidgetsBindingObserver {
   }
 
   Duration currentPhaseDuration() {
-    switch (phase) {
+    switch (counterState.phase) {
       case Phase.FASTING:
         return fastingTime;
       case Phase.EATING:
@@ -62,7 +71,8 @@ class CounterBloc with WidgetsBindingObserver {
   }
 
   void switchPhase() {
-    phase = phase == Phase.FASTING ? Phase.EATING : Phase.FASTING;
+    counterState.phase =
+        counterState.phase == Phase.FASTING ? Phase.EATING : Phase.FASTING;
     saveTimeData(currentTime);
     initialTime = DateTime.now();
   }
@@ -77,11 +87,11 @@ class CounterBloc with WidgetsBindingObserver {
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (running == true) {
         currentTime = currentTime.add(const Duration(seconds: 1));
-        duration = currentTime.difference(initialTime);
-        if (duration >= currentPhaseDuration()) {
+        counterState.duration = currentTime.difference(initialTime);
+        if (counterState.duration >= currentPhaseDuration()) {
           switchPhase();
         }
-        _subjectCount.sink.add(duration);
+        _subjectCount.sink.add(counterState);
       } else {
         timer.cancel();
       }
