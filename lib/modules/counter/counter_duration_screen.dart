@@ -8,7 +8,7 @@ class CounterDurationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext build) {
     return Container(
-      height: 100,
+      height: 200,
       width: 300,
       child: GridView.count(
         primary: false,

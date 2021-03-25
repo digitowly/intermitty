@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intermitty/utils/helpers/normalizer.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,8 +10,9 @@ enum Phase { FASTING, EATING }
 class CounterState {
   Duration duration;
   Phase phase;
+  double circleValue = 0.0;
 
-  CounterState({@required this.phase});
+  CounterState({@required this.duration, @required this.phase});
 }
 
 class CounterBloc with WidgetsBindingObserver {
@@ -34,19 +36,21 @@ class CounterBloc with WidgetsBindingObserver {
     @required this.initPhase,
     @required this.running,
   }) {
-    counterState = CounterState(phase: initPhase);
+    counterState =
+        CounterState(duration: const Duration(seconds: 0), phase: initPhase);
     _subjectCount = BehaviorSubject<CounterState>.seeded(counterState);
     WidgetsBinding.instance.addObserver(this);
     initStartTime();
   }
+
+  Stream<CounterState> get stream => _subjectCount.stream;
+  CounterState get current => _subjectCount.value;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('WOW: $state');
     saveTimeData(currentTime);
   }
-
-  Stream<CounterState> get timeObservable => _subjectCount.stream;
 
   void initStartTime() async {
     final initTime = await initialTimeFuture;
@@ -56,7 +60,7 @@ class CounterBloc with WidgetsBindingObserver {
       initialTime = DateTime.now();
     }
     currentTime = DateTime.now();
-    toggle();
+    run();
   }
 
   Duration currentPhaseDuration() {
@@ -82,15 +86,25 @@ class CounterBloc with WidgetsBindingObserver {
     prefs.setString('time', currentTime.toIso8601String());
   }
 
-  void toggle() {
+  void setCircleValue() {
+    counterState.circleValue = Normalizer.forCircle(
+      maxMeasure: currentPhaseDuration().inSeconds.toDouble(),
+      minMeasure: 0.0,
+    ).normalize(
+      counterState.duration.inSeconds.toDouble(),
+    );
+  }
+
+  void run() {
     running = !running;
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (running == true) {
-        currentTime = currentTime.add(const Duration(seconds: 1));
-        counterState.duration = currentTime.difference(initialTime);
         if (counterState.duration >= currentPhaseDuration()) {
           switchPhase();
         }
+        currentTime = currentTime.add(const Duration(seconds: 1));
+        counterState.duration = currentTime.difference(initialTime);
+        setCircleValue();
         _subjectCount.sink.add(counterState);
       } else {
         timer.cancel();
