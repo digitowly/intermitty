@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-class ProgressCircle extends CustomPainter {
+class ProgressCircleOutlinne extends CustomPainter {
   final double progress;
+  double segment = 2;
 
-  ProgressCircle({this.progress});
+  ProgressCircleOutlinne({this.progress, this.segment});
 
   final Paint _paint = Paint()
     ..style = PaintingStyle.stroke
     ..strokeCap = StrokeCap.round
+    ..color = Colors.white70
     ..strokeWidth = 18;
 
   @override
@@ -25,7 +27,7 @@ class ProgressCircle extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(ProgressCircle oldDelegate) {
+  bool shouldRepaint(ProgressCircleOutlinne oldDelegate) {
     return oldDelegate.progress != progress;
   }
 }

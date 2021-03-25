@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intermitty/modules/counter/counter_bloc.dart';
 import 'package:intermitty/modules/counter/counter_duration_screen.dart';
-import 'package:intermitty/widgets/progress_circle.dart';
+import 'package:intermitty/modules/counter/counter_graphics.dart';
+import 'package:intermitty/widgets/circles/progress_circle_outline.dart';
+import 'package:intermitty/widgets/circles/static_circle_outline.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intermitty/widgets/pointer.dart';
 
 final getIt = GetIt.instance;
 
@@ -41,22 +44,15 @@ class CounterScreen extends StatelessWidget {
                         builder: (streamContext, streamSnapshot) {
                           if (streamSnapshot.hasData) {
                             CounterState counterState = streamSnapshot.data;
-                            return Stack(
-                              alignment: AlignmentDirectional.center,
-                              children: [
-                                CustomPaint(
-                                  painter: ProgressCircle(
-                                      progress: counterState.circleValue),
-                                ),
-                                CounterDurationScreen(
-                                    duration: counterState.duration)
-                              ],
-                            );
+                            return CounterGraphics(
+                                progress: counterState.circleValue,
+                                duration: counterState.duration);
                           } else {
                             return Stack(
                               children: [
                                 CustomPaint(
-                                  painter: ProgressCircle(progress: 1.9),
+                                  painter:
+                                      ProgressCircleOutlinne(progress: 1.9),
                                 ),
                               ],
                             );
